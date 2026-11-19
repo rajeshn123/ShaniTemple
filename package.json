@@ -1,0 +1,9 @@
+{
+  "name": "shani-temple-root",
+  "version": "1.0.0",
+  "scripts": {
+    "start:server": "cd server && node server.js",
+    "start:client": "cd client && npm run dev",
+    "build:client": "cd client && npm run build"
+  }
+}
