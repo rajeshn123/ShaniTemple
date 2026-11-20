@@ -136,7 +136,7 @@ export default function MyBookings({ onOpenReceipt }) {
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300">
                     <span className="flex items-center gap-1 text-amber-400">
                       <Calendar className="w-3.5 h-3.5" />
-                      {b.seva_date} ({b.seva_time || '08:00 AM'})
+                      {b.seva_date} ({b.seva_time || '06:00 AM'})
                     </span>
                     <span>
                       Devotee: <strong>{b.devotee_name}</strong>

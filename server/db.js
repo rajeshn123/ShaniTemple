@@ -16,7 +16,7 @@ db.exec(`
     seva_type TEXT NOT NULL,
     seva_name TEXT NOT NULL,
     seva_date TEXT NOT NULL,
-    seva_time TEXT NOT NULL DEFAULT '08:00 AM',
+    seva_time TEXT NOT NULL DEFAULT '06:00 AM',
     amount INTEGER NOT NULL,
     family_members TEXT DEFAULT '[]',
     payment_method TEXT DEFAULT 'UPI',

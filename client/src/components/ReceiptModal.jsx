@@ -105,7 +105,7 @@ export default function ReceiptModal({ booking, onClose, onBookAnother }) {
                 {booking.seva_date}
               </span>
               <span className="text-[11px] text-slate-300">
-                Batch Time: <strong>{booking.seva_time || '08:00 AM'}</strong>
+                Batch Time: <strong>{booking.seva_time || '06:00 AM'}</strong>
               </span>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function ReceiptModal({ booking, onClose, onBookAnother }) {
           </div>
 
           <div className="mt-3 p-2 bg-slate-900/80 rounded-lg text-[9px] text-slate-400 leading-relaxed border border-slate-800">
-            <strong>Temple Guidelines:</strong> Please present this receipt on your mobile or in print at the Seva Counter before 07:30 AM. Traditional attire (Dhoti/Kurta for men, Saree/Chudidar for women) is recommended. If you cannot attend in person, the Acharya will perform the Sankalpa on your behalf and consecrated Raksha thread with Vibhuti prasadam can be collected anytime.
+            <strong>Temple Guidelines:</strong> Please present this receipt on your mobile or in print at the Seva Counter before 05:45 AM for the 06:00 AM Abhisheka. Traditional attire (Dhoti/Kurta for men, Saree/Chudidar for women) is recommended. If you cannot attend in person, the Acharya will perform the Sankalpa on your behalf and consecrated Raksha thread with Vibhuti prasadam can be collected anytime.
           </div>
         </div>
 

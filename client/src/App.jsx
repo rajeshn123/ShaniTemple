@@ -228,7 +228,7 @@ export default function App() {
             <ul className="text-[11px] space-y-1.5 text-slate-400">
               <li>• <strong>Saturdays (Special):</strong> 05:30 AM to 01:30 PM & 04:30 PM to 09:30 PM</li>
               <li>• <strong>Weekdays:</strong> 06:00 AM to 12:00 PM & 05:30 PM to 08:30 PM</li>
-              <li>• <strong>Morning Abhisheka Batches:</strong> 07:30 AM, 08:30 AM, 09:30 AM, 11:00 AM</li>
+              <li>• <strong>Morning Abhisheka Batch:</strong> 06:00 AM (Brahma Muhurtha / ಪ್ರಾತಃಕಾಲ)</li>
               <li>• <strong>Maha Mangalarathi:</strong> 12:30 PM & 08:30 PM</li>
             </ul>
           </div>

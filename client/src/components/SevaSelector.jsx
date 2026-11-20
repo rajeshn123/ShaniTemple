@@ -30,7 +30,7 @@ export default function SevaSelector({ sevas, selectedSeva, onSelectSeva }) {
         </div>
         <div className="text-xs text-slate-400 flex items-center gap-1.5 self-start sm:self-auto">
           <Clock className="w-3.5 h-3.5 text-amber-400" />
-          <span>Performed during Morning Pooja hours</span>
+          <span>Performed daily at 06:00 AM (Brahma Muhurtha)</span>
         </div>
       </div>
 

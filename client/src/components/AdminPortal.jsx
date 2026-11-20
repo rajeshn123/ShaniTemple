@@ -579,7 +579,7 @@ export default function AdminPortal({ onOpenReceipt, auspiciousDates = [] }) {
                           )}
                         </div>
                         <div className="text-[10px] text-amber-400 font-medium">
-                          {b.seva_time || '08:00 AM'}
+                          {b.seva_time || '06:00 AM'}
                         </div>
                       </td>
 
@@ -687,7 +687,7 @@ export default function AdminPortal({ onOpenReceipt, auspiciousDates = [] }) {
                   <div key={b.id} className="border border-slate-300 rounded-lg p-3 bg-slate-50/50 text-xs">
                     <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-1.5">
                       <span className="font-bold text-amber-950 text-sm">
-                        #{idx + 1}. {b.seva_name} ({b.seva_time || '08:00 AM'})
+                        #{idx + 1}. {b.seva_name} ({b.seva_time || '06:00 AM'})
                       </span>
                       <span className="font-mono text-xs text-slate-500">Ref: {b.booking_id}</span>
                     </div>

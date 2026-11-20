@@ -68,7 +68,7 @@ const SEVAS = [
     amount: 151,
     deity: 'Lord Shaneeshwara',
     duration: '30 mins',
-    timing: '07:30 AM & 10:00 AM',
+    timing: '06:00 AM (Brahma Muhurtha)',
     description: 'Sacred bath offered with fresh cow milk to Lord Shani.',
     significance: 'Cooling the planetary heat, bringing mental peace, harmony in family, and removing physical ailments.',
     prasadam: 'Pooja Kumkuma, Vibhuti, Panchamrutha Theertha & Akshathe.'
@@ -79,7 +79,7 @@ const SEVAS = [
     amount: 251,
     deity: 'Lord Shaneeshwara',
     duration: '45 mins',
-    timing: '08:30 AM & 11:00 AM',
+    timing: '06:00 AM (Brahma Muhurtha)',
     description: 'Devotional offering of pure black sesame (Til / Ellu) oil directly over the sacred Shani Shila.',
     significance: 'Most revered seva for Lord Shani. Pacifies Sade Sati (7.5 years transit), Ashtama Shani, Kantaka Shani, removes obstacles, and protects from accidents and malefic planetary influences.',
     prasadam: 'Raksha Sutra (black thread), consecrated sesame oil drops, Vibhuti & Shani Mahaprasadam.'
@@ -90,7 +90,7 @@ const SEVAS = [
     amount: 501,
     deity: 'Lord Shaneeshwara',
     duration: '60 mins',
-    timing: '09:00 AM & 11:30 AM',
+    timing: '06:00 AM (Brahma Muhurtha)',
     description: 'Grand sacred abhisheka using 5 divine nectars: Cow Milk, Curd, Desi Ghee, Pure Forest Honey, and Khanda Sugar/Fruits.',
     significance: 'Supreme purification of body, mind, and karma. Promotes longevity, spiritual illumination, prosperity, and total dissolution of severe graha doshas.',
     prasadam: 'Special Sankalpa Silver coin (token), consecrated Panchamrutha, Dry Fruits Prasadam, Raksha Thread & Temple Calendar.'
@@ -190,7 +190,7 @@ app.post('/api/bookings', (req, res) => {
       seva.id,
       seva.name,
       sevaDate,
-      sevaTime || '08:00 AM',
+      sevaTime || '06:00 AM',
       seva.amount,
       JSON.stringify(familyMembers || []),
       paymentMethod || 'UPI',
