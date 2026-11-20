@@ -2,9 +2,16 @@
 node_modules/
 client/node_modules/
 server/node_modules/
+functions/node_modules/
 
 # Production build
 client/dist/
+
+# Firebase
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
 
 # SQLite Database & temporary files
 server/*.db

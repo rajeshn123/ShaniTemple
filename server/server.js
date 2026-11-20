@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('node:path');
-const db = require('./db');
+const dbService = require('./db_service');
 const { getAuspiciousDates } = require('./dates');
 
 const app = express();
@@ -127,7 +127,7 @@ app.get('/api/reference-data', (req, res) => {
 });
 
 // 4. Create Booking
-app.post('/api/bookings', (req, res) => {
+app.post('/api/bookings', async (req, res) => {
   try {
     const {
       devoteeName,
@@ -163,45 +163,18 @@ app.post('/api/bookings', (req, res) => {
       return res.status(400).json({ error: 'Seva Date is required' });
     }
 
-    // Generate unique booking ID: SHANI-YEAR-RANDOM
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const bookingId = `SHANI-${new Date().getFullYear()}-${randomSuffix}`;
-    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-
-    const stmt = db.prepare(`
-      INSERT INTO bookings (
-        booking_id, devotee_name, phone, gothra, nakshatra, seva_type, seva_name,
-        seva_date, seva_time, amount, family_members, payment_method, payment_status,
-        payment_ref, booking_status, created_at
-      ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-      )
-    `);
-
-    const createdAt = new Date().toISOString();
-    const finalPaymentRef = paymentRef || `UPI-SHANI-${Date.now().toString().slice(-8)}`;
-
-    const result = stmt.run(
-      bookingId,
-      devoteeName.trim(),
-      cleanPhone,
-      gothra.trim(),
-      nakshatra.trim(),
-      seva.id,
-      seva.name,
+    const newBooking = await dbService.createBooking({
+      devoteeName,
+      phone,
+      gothra,
+      nakshatra,
+      seva,
       sevaDate,
-      sevaTime || '06:00 AM',
-      seva.amount,
-      JSON.stringify(familyMembers || []),
-      paymentMethod || 'UPI',
-      'PAID',
-      finalPaymentRef,
-      'CONFIRMED',
-      createdAt
-    );
-
-    const newBooking = db.prepare('SELECT * FROM bookings WHERE id = ?').get(result.lastInsertRowid);
-    newBooking.family_members = JSON.parse(newBooking.family_members || '[]');
+      sevaTime: sevaTime || '06:00 AM',
+      familyMembers,
+      paymentMethod,
+      paymentRef
+    });
 
     res.status(201).json({
       success: true,
@@ -215,71 +188,32 @@ app.post('/api/bookings', (req, res) => {
 });
 
 // 5. Devotee Lookup (by phone or booking ID)
-app.get('/api/bookings/lookup', (req, res) => {
+app.get('/api/bookings/lookup', async (req, res) => {
   const query = (req.query.query || '').trim();
   if (!query) {
     return res.status(400).json({ error: 'Please enter a phone number or Booking Reference ID' });
   }
 
-  const cleanDigits = query.replace(/\D/g, '');
-  let bookings;
-
-  if (cleanDigits.length >= 7) {
-    const stmt = db.prepare('SELECT * FROM bookings WHERE phone LIKE ? ORDER BY id DESC');
-    bookings = stmt.all(`%${cleanDigits}%`);
-  } else {
-    const stmt = db.prepare('SELECT * FROM bookings WHERE booking_id LIKE ? ORDER BY id DESC');
-    bookings = stmt.all(`%${query.toUpperCase()}%`);
+  try {
+    const bookings = await dbService.lookupBookings(query);
+    res.json({ success: true, count: bookings.length, bookings });
+  } catch (err) {
+    console.error('Error in lookup:', err);
+    res.status(500).json({ error: err.message });
   }
-
-  bookings.forEach(b => {
-    b.family_members = JSON.parse(b.family_members || '[]');
-  });
-
-  res.json({ success: true, count: bookings.length, bookings });
 });
 
 // 6. Admin: List Bookings with Filters & Search
-app.get('/api/bookings', verifyAdmin, (req, res) => {
+app.get('/api/bookings', verifyAdmin, async (req, res) => {
   try {
     const { date, startDate, endDate, sevaType, search, status } = req.query;
-
-    let sql = 'SELECT * FROM bookings WHERE 1=1';
-    const params = [];
-
-    if (date) {
-      sql += ' AND seva_date = ?';
-      params.push(date);
-    }
-    if (startDate) {
-      sql += ' AND seva_date >= ?';
-      params.push(startDate);
-    }
-    if (endDate) {
-      sql += ' AND seva_date <= ?';
-      params.push(endDate);
-    }
-    if (sevaType) {
-      sql += ' AND seva_type = ?';
-      params.push(sevaType);
-    }
-    if (status) {
-      sql += ' AND booking_status = ?';
-      params.push(status);
-    }
-    if (search && search.trim()) {
-      sql += ' AND (devotee_name LIKE ? OR phone LIKE ? OR booking_id LIKE ? OR gothra LIKE ?)';
-      const term = `%${search.trim()}%`;
-      params.push(term, term, term, term);
-    }
-
-    sql += ' ORDER BY seva_date ASC, id DESC';
-
-    const stmt = db.prepare(sql);
-    const bookings = stmt.all(...params);
-
-    bookings.forEach(b => {
-      b.family_members = JSON.parse(b.family_members || '[]');
+    const bookings = await dbService.listBookings({
+      date,
+      startDate,
+      endDate,
+      sevaType,
+      search,
+      status
     });
 
     res.json({ success: true, count: bookings.length, bookings });
@@ -290,7 +224,7 @@ app.get('/api/bookings', verifyAdmin, (req, res) => {
 });
 
 // 7. Admin: Update Status
-app.patch('/api/bookings/:id/status', verifyAdmin, (req, res) => {
+app.patch('/api/bookings/:id/status', verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -298,10 +232,8 @@ app.patch('/api/bookings/:id/status', verifyAdmin, (req, res) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
-    const stmt = db.prepare('UPDATE bookings SET booking_status = ? WHERE id = ?');
-    const result = stmt.run(status, id);
-
-    if (result.changes === 0) {
+    const updated = await dbService.updateBookingStatus(id, status);
+    if (!updated) {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
@@ -312,38 +244,12 @@ app.patch('/api/bookings/:id/status', verifyAdmin, (req, res) => {
 });
 
 // 8. Admin: Statistics & Overview
-app.get('/api/admin/stats', verifyAdmin, (req, res) => {
+app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
   try {
-    const totalStmt = db.prepare('SELECT COUNT(*) as totalCount, SUM(amount) as totalRevenue FROM bookings');
-    const totalStats = totalStmt.get();
-
-    const completedStmt = db.prepare("SELECT COUNT(*) as count FROM bookings WHERE booking_status = 'COMPLETED'");
-    const completedCount = completedStmt.get().count;
-
-    const confirmedStmt = db.prepare("SELECT COUNT(*) as count FROM bookings WHERE booking_status = 'CONFIRMED'");
-    const confirmedCount = confirmedStmt.get().count;
-
-    const sevaBreakdownStmt = db.prepare(`
-      SELECT seva_type, seva_name, COUNT(*) as count, SUM(amount) as totalAmount
-      FROM bookings
-      GROUP BY seva_type, seva_name
-    `);
-    const sevaBreakdown = sevaBreakdownStmt.all();
-
-    const todayStr = new Date().toISOString().split('T')[0];
-    const todayStmt = db.prepare('SELECT COUNT(*) as count FROM bookings WHERE seva_date = ?');
-    const todayCount = todayStmt.get(todayStr).count;
-
+    const stats = await dbService.getAdminStats();
     res.json({
       success: true,
-      stats: {
-        totalBookings: totalStats.totalCount || 0,
-        totalRevenue: totalStats.totalRevenue || 0,
-        completedCount,
-        confirmedCount,
-        todayCount,
-        sevaBreakdown
-      }
+      stats
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -351,50 +257,26 @@ app.get('/api/admin/stats', verifyAdmin, (req, res) => {
 });
 
 // 9. Admin: Export CSV
-app.get('/api/admin/export-csv', verifyAdmin, (req, res) => {
+app.get('/api/admin/export-csv', verifyAdmin, async (req, res) => {
   try {
     const { date, startDate, endDate, sevaType, status, search } = req.query;
-
-    let sql = 'SELECT * FROM bookings WHERE 1=1';
-    const params = [];
-
-    if (date) {
-      sql += ' AND seva_date = ?';
-      params.push(date);
-    }
-    if (startDate) {
-      sql += ' AND seva_date >= ?';
-      params.push(startDate);
-    }
-    if (endDate) {
-      sql += ' AND seva_date <= ?';
-      params.push(endDate);
-    }
-    if (sevaType) {
-      sql += ' AND seva_type = ?';
-      params.push(sevaType);
-    }
-    if (status) {
-      sql += ' AND booking_status = ?';
-      params.push(status);
-    }
-    if (search && search.trim()) {
-      sql += ' AND (devotee_name LIKE ? OR phone LIKE ? OR booking_id LIKE ? OR gothra LIKE ?)';
-      const term = `%${search.trim()}%`;
-      params.push(term, term, term, term);
-    }
-
-    sql += ' ORDER BY seva_date ASC, id ASC';
-
-    const stmt = db.prepare(sql);
-    const bookings = stmt.all(...params);
+    const bookings = await dbService.listBookings({
+      date,
+      startDate,
+      endDate,
+      sevaType,
+      status,
+      search
+    });
 
     let csv = 'Booking ID,Devotee Name,Phone,Gothra,Nakshatra,Seva Name,Seva Date,Seva Time,Amount (INR),Payment Status,Payment Ref,Status,Family Members,Booked At\n';
     
     for (const b of bookings) {
       let family = '';
       try {
-        const famArr = JSON.parse(b.family_members || '[]');
+        const famArr = Array.isArray(b.family_members)
+          ? b.family_members
+          : JSON.parse(b.family_members || '[]');
         family = famArr.map(f => `${f.name} (${f.nakshatra || ''} - ${f.relationship || ''})`).join('; ');
       } catch (e) {
         family = '';
@@ -427,7 +309,7 @@ app.get('/api/admin/export-csv', verifyAdmin, (req, res) => {
   }
 });
 
-// Serve frontend static build
+// Serve frontend static build if present
 const clientDist = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDist));
 
@@ -436,6 +318,11 @@ app.get('*', (req, res, next) => {
   res.sendFile(path.join(clientDist, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`🛕 Sri Shaneeshwara Temple Server is running on http://localhost:${PORT}`);
-});
+// Only listen when executed directly, not when imported by Cloud Functions
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🛕 Sri Shaneeshwara Temple Server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
