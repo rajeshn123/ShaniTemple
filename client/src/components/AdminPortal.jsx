@@ -18,6 +18,7 @@ import {
   Sparkles,
   CalendarDays
 } from 'lucide-react';
+import { getApiUrl } from '../config/api';
 
 export default function AdminPortal({ onOpenReceipt, auspiciousDates = [] }) {
   const [password, setPassword] = useState('');
@@ -74,7 +75,7 @@ export default function AdminPortal({ onOpenReceipt, auspiciousDates = [] }) {
     setLoading(true);
     try {
       // 1. Fetch Stats
-      const statsRes = await fetch('/api/admin/stats', {
+      const statsRes = await fetch(getApiUrl('/api/admin/stats'), {
         headers: { 'x-admin-password': pwd }
       });
       if (statsRes.ok) {
@@ -83,7 +84,7 @@ export default function AdminPortal({ onOpenReceipt, auspiciousDates = [] }) {
       }
 
       // 2. Fetch Bookings with date & other filters
-      let url = `/api/bookings?password=${encodeURIComponent(pwd)}`;
+      let url = getApiUrl(`/api/bookings?password=${encodeURIComponent(pwd)}`);
       if (filterDate) url += `&date=${encodeURIComponent(filterDate)}`;
       if (filterSeva) url += `&sevaType=${encodeURIComponent(filterSeva)}`;
       if (filterStatus) url += `&status=${encodeURIComponent(filterStatus)}`;
@@ -109,7 +110,7 @@ export default function AdminPortal({ onOpenReceipt, auspiciousDates = [] }) {
 
   const handleUpdateStatus = async (id, newStatus) => {
     try {
-      const res = await fetch(`/api/bookings/${id}/status`, {
+      const res = await fetch(getApiUrl(`/api/bookings/${id}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +127,7 @@ export default function AdminPortal({ onOpenReceipt, auspiciousDates = [] }) {
   };
 
   const handleExportCSV = () => {
-    let url = `/api/admin/export-csv?password=${encodeURIComponent(password)}`;
+    let url = getApiUrl(`/api/admin/export-csv?password=${encodeURIComponent(password)}`);
     if (filterDate) url += `&date=${encodeURIComponent(filterDate)}`;
     if (filterSeva) url += `&sevaType=${encodeURIComponent(filterSeva)}`;
     if (filterStatus) url += `&status=${encodeURIComponent(filterStatus)}`;

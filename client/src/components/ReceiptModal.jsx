@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { Printer, Download, CheckCircle, Sparkles, X, Calendar, User, Phone, ShieldCheck, Heart } from 'lucide-react';
+import { Printer, Download, CheckCircle, Sparkles, X, Calendar, User, Phone, ShieldCheck, Heart, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { Share } from '@capacitor/share';
 
 export default function ReceiptModal({ booking, onClose, onBookAnother }) {
   useEffect(() => {
@@ -21,6 +22,25 @@ export default function ReceiptModal({ booking, onClose, onBookAnother }) {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleShare = async () => {
+    const text = `🕉️ ಶ್ರೀ ಶನೇಶ್ವರ ಸ್ವಾಮಿ ದೇವಸ್ಥಾನ (Sri Shaneeshwara Temple)\nಅಭಿಷೇಕ ಸೇವಾ ರಶೀದಿ (Abhisheka Booking Receipt)\n\n• Token: ${booking.booking_id}\n• ಭಕ್ತರ ಹೆಸರು: ${booking.devotee_name}\n• ಸೇವೆ: ${booking.seva_name}\n• ದಿನಾಂಕ: ${booking.seva_date} (06:00 AM)\n• ದಕ್ಷಿಣೆ: ₹${booking.amount}\n• ಗೋತ್ರ: ${booking.gothra} | ನಕ್ಷತ್ರ: ${booking.nakshatra}\n• ಸ್ಥಿತಿ: CONFIRMED & PAID\n\n॥ ಶುಭಮಸ್ತು • ಸರ್ವ ಕಾರ್ಯ ಸಿದ್ಧಿರ್ಭವತು ॥`;
+
+    try {
+      await Share.share({
+        title: 'Sri Shaneeshwara Temple Seva Receipt',
+        text: text,
+        dialogTitle: 'Share Seva Receipt via WhatsApp / Phone'
+      });
+    } catch (e) {
+      if (navigator.share) {
+        navigator.share({ title: 'Sri Shaneeshwara Temple Seva Receipt', text });
+      } else {
+        navigator.clipboard.writeText(text);
+        alert('Receipt details copied to clipboard!');
+      }
+    }
   };
 
   const family = Array.isArray(booking.family_members)
@@ -182,6 +202,15 @@ export default function ReceiptModal({ booking, onClose, onBookAnother }) {
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-semibold transition"
           >
             Book Another Seva
+          </button>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-1.5 transition"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Share (ರಶೀದಿ ಹಂಚಿಕೊಳ್ಳಿ)</span>
           </button>
 
           <button

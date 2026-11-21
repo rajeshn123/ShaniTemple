@@ -7,6 +7,8 @@ import ReceiptModal from './components/ReceiptModal';
 import MyBookings from './components/MyBookings';
 import AdminPortal from './components/AdminPortal';
 import { Sparkles, Calendar, ShieldCheck, MapPin, Phone, Clock, Heart, Award } from 'lucide-react';
+import { getApiUrl, isNative } from './config/api';
+import { App as CapApp } from '@capacitor/app';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('book'); // 'book' | 'my-bookings' | 'admin'
@@ -29,9 +31,9 @@ export default function App() {
     async function loadData() {
       try {
         const [sevasRes, datesRes, refRes] = await Promise.all([
-          fetch('/api/sevas'),
-          fetch('/api/auspicious-dates'),
-          fetch('/api/reference-data')
+          fetch(getApiUrl('/api/sevas')),
+          fetch(getApiUrl('/api/auspicious-dates')),
+          fetch(getApiUrl('/api/reference-data'))
         ]);
 
         const sevasData = await sevasRes.json();
@@ -61,7 +63,29 @@ export default function App() {
     }
 
     loadData();
-  }, []);
+
+    // Android hardware back button handler
+    let backListener;
+    if (isNative) {
+      CapApp.addListener('backButton', ({ canGoBack }) => {
+        if (activeReceipt) {
+          setActiveReceipt(null);
+        } else if (showPaymentModal) {
+          setShowPaymentModal(false);
+        } else if (activeTab !== 'book') {
+          setActiveTab('book');
+        } else if (canGoBack) {
+          window.history.back();
+        } else {
+          CapApp.exitApp();
+        }
+      }).then(l => { backListener = l; });
+    }
+
+    return () => {
+      if (backListener) backListener.remove();
+    };
+  }, [activeReceipt, showPaymentModal, activeTab]);
 
   // Handle Booking Form submission (Opens payment modal)
   const handleBookingSubmit = (formData) => {
@@ -78,7 +102,7 @@ export default function App() {
         paymentRef
       };
 
-      const res = await fetch('/api/bookings', {
+      const res = await fetch(getApiUrl('/api/bookings'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sri Shaneeshwara Temple</string>
+    <string name="title_activity_main">Sri Shaneeshwara Temple</string>
+    <string name="package_name">org.shanitemple.app</string>
+    <string name="custom_url_scheme">org.shanitemple.app</string>
+</resources>

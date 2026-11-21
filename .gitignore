@@ -35,6 +35,15 @@ yarn-error.log*
 Thumbs.db
 desktop.ini
 
+# Android & Release binaries
+releases/
+client/android/local.properties
+client/android/.gradle/
+client/android/app/build/
+client/android/build/
+*.apk
+*.aab
+
 # IDE & Editor files
 .vscode/
 .idea/

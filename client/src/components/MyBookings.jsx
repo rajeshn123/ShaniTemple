@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Calendar, User, Phone, CheckCircle, Clock, FileText, AlertCircle, Loader2 } from 'lucide-react';
+import { getApiUrl } from '../config/api';
 
 export default function MyBookings({ onOpenReceipt }) {
   const [query, setQuery] = useState('');
@@ -19,7 +20,7 @@ export default function MyBookings({ onOpenReceipt }) {
     setResults(null);
 
     try {
-      const res = await fetch(`/api/bookings/lookup?query=${encodeURIComponent(query.trim())}`);
+      const res = await fetch(getApiUrl(`/api/bookings/lookup?query=${encodeURIComponent(query.trim())}`));
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Failed to search bookings');

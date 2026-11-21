@@ -1,0 +1,16 @@
+{
+  "appId": "org.shanitemple.app",
+  "appName": "Sri Shaneeshwara Temple",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0F172A"
+    }
+  }
+}

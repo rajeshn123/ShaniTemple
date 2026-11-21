@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, CheckCircle2, QrCode, Smartphone, Sparkles, Loader2 } from 'lucide-react';
+import { X, ShieldCheck, CheckCircle2, QrCode, Smartphone, Sparkles, Loader2, ExternalLink } from 'lucide-react';
+import { isNative } from '../config/api';
 
 export default function PaymentModal({
   bookingData,
@@ -9,6 +10,11 @@ export default function PaymentModal({
 }) {
   const [processing, setProcessing] = useState(false);
   const [selectedApp, setSelectedApp] = useState('gpay');
+
+  const handleLaunchUPI = () => {
+    const upiUrl = `upi://pay?pa=srisheneashwara.trust@okhdfcbank&pn=Sri+Shaneeshwara+Swamy+Temple&am=${selectedSeva?.amount}&cu=INR&tn=${encodeURIComponent(selectedSeva?.name || 'Abhisheka')}`;
+    window.location.href = upiUrl;
+  };
 
   const handleSimulatePayment = () => {
     setProcessing(true);
@@ -141,6 +147,17 @@ export default function PaymentModal({
 
         {/* Action Button */}
         <div className="mt-5 space-y-2">
+          {/* Direct UPI App launcher on Android */}
+          <button
+            type="button"
+            onClick={handleLaunchUPI}
+            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 hover:from-amber-400 hover:to-orange-500 active:scale-95 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-amber-950/50 flex items-center justify-center gap-2 transition"
+          >
+            <Smartphone className="w-4 h-4 text-slate-950" />
+            <span>Pay via UPI App (GPay / PhonePe / Paytm)</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-900" />
+          </button>
+
           <button
             type="button"
             disabled={processing}
